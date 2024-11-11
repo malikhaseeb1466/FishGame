@@ -615,15 +615,12 @@
 
 
     // Set canvas dimensions (You can adjust these values according to your canvas size)
-    var canvasWidth = canvas.width;
-    var canvasHeight = canvas.height;
-    
-    // Function to handle touch input and update fish position
+   // Function to handle touch input and update fish position
     function handleTouch(e) {
         var rect = canvas.getBoundingClientRect();
         var tx = e.changedTouches ? e.changedTouches[0].clientX : e.clientX; // Touch or mouse event
         var ty = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
-    
+
         // Determine the direction based on the touch position
         if (tx > rect.left + rect.width / 2) {  // Right side
             if (fishX + scaledFishWidth < canvasWidth) { // Ensure fish stays within canvas
@@ -634,7 +631,7 @@
                 fishX -= 10;  // Move fish to the left
             }
         }
-    
+
         if (ty > rect.top + rect.height / 2) {  // Bottom side
             if (fishY + scaledFishHeight < canvasHeight) { // Ensure fish stays within canvas
                 fishY += 10;  // Move fish down
@@ -644,17 +641,12 @@
                 fishY -= 10;  // Move fish up
             }
         }
-    
-        // Redraw the fish at the new position (if needed, call your drawing logic here)
-        drawFish();  // Assuming you have a function to redraw the fish at new coordinates
+
     }
-    
+
     // Attach touch and click event listeners
     window.addEventListener('touchstart', handleTouch);
     window.addEventListener('click', handleTouch);
-
-
-
 
 
 
