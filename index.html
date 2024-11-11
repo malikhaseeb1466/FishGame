@@ -614,64 +614,28 @@
     }
 
 
-    let isDragging = false; // Flag to track if the fish is being dragged
-let initialTouchX = 0;  // To store the initial X position of the touch
-let initialTouchY = 0;  // To store the initial Y position of the touch
-
-// Touch start event - start dragging only if within the canvas area
-window.addEventListener('touchstart', touchStartFish);
-window.addEventListener('touchmove', touchMoveFish);
-window.addEventListener('touchend', touchEndFish);
-
-function touchStartFish(touchEvent) {
-    touchEvent.preventDefault(); // Prevent default behavior (scrolling)
-
-    // Get the canvas offset
-    var rect = canvas.getBoundingClientRect();
-
-    // Get touch position relative to the canvas
-    let touchX = touchEvent.touches[0].clientX - rect.left;
-    let touchY = touchEvent.touches[0].clientY - rect.top;
-
-    // Check if the touch is inside the fish's current position
-    if (getDistanceToFish(touchX, touchY) <= 25) { // Assuming 25 is the radius of the fish
-        isDragging = true; // Start dragging
-        initialTouchX = touchX;
-        initialTouchY = touchY;
-    }
-}
-
-function touchMoveFish(touchEvent) {
-    if (isDragging) {
-        touchEvent.preventDefault(); // Prevent default behavior (scrolling)
-
-        // Get the canvas offset
+    window.addEventListener('touchstart', handleTouch);
+    window.addEventListener('click', handleTouch);
+    
+    function handleTouch(e) {
         var rect = canvas.getBoundingClientRect();
-
-        // Calculate touch coordinates relative to the canvas
-        let touchX = touchEvent.touches[0].clientX - rect.left;
-        let touchY = touchEvent.touches[0].clientY - rect.top;
-
-        // Move the fish by the change in position from the initial touch
-        fishX += touchX - initialTouchX;
-        fishY += touchY - initialTouchY;
-
-        // Update the initial touch position to the current position
-        initialTouchX = touchX;
-        initialTouchY = touchY;
+        var tx = e.changedTouches ? e.changedTouches[0].clientX : e.clientX; // Touch event or mouse event
+        var ty = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+    
+        // Calculate the position based on the right/left and top/bottom click area
+        if (tx > rect.left + rect.width / 2) {  // Right side
+            fishX += 10; // Move fish to the right
+        } else {  // Left side
+            fishX -= 10; // Move fish to the left
+        }
+    
+        if (ty > rect.top + rect.height / 2) {  // Bottom side
+            fishY += 10; // Move fish down
+        } else {  // Top side
+            fishY -= 10; // Move fish up
+        }
     }
-}
 
-function touchEndFish(touchEvent) {
-    isDragging = false; // Stop dragging when touch ends
-}
-
-// Helper function to check distance to the fish's center
-function getDistanceToFish(touchX, touchY) {
-    let dx = touchX - fishX;
-    let dy = touchY - fishY;
-    return Math.sqrt(dx * dx + dy * dy);
-}
 
 
 
