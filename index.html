@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Responsive Canvas with Background</title>
     <style>
@@ -27,22 +28,17 @@
 <canvas id="gameCanvas"></canvas>
 
 <script>
+    
+
+
     // Initialize the canvas and context
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
     let canvasWidth = window.innerWidth * 0.8;
-    let canvasHeight = window.innerHeight * 0.8;
+    let canvasHeight = window.innerHeight * 0.7;
 
-    // Set the canvas size initially
-    function setCanvasSize() {
-        canvasWidth = window.innerWidth * 0.9;
-        canvasHeight = window.innerHeight * 0.9;
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
-    }
 
-    
     // Load all images
     const backgroundImage = new Image();
     backgroundImage.src = 'images/level1.png'; 
@@ -94,6 +90,189 @@
     const netAudio = new Audio("audio/net.mp3");
     const boostAudio = new Audio("audio/boost.mp3");
 
+    
+
+    // Score variables
+    let score = 0;
+    let level = 1;
+    let timer=20;
+    let timerInterval;
+    let gameOverFlag=false;
+    let levelCleared = false;
+  
+    /*--------Shark movement variables--------*/
+    const sharkWidth = canvasWidth * 0.15; // 15% of original width
+    const sharkHeight = canvasHeight * 0.2; // 20% of original height
+
+    let sharkX =(canvasWidth - sharkWidth)*0.8;
+    let sharkY = 0;
+    let sharkSpeed = 1;
+    let sharkDirection = 1; // 1 means down, -1 means up
+
+    
+
+
+    /*--------NET movement variables--------*/
+    let netX = (canvasWidth/2)*0.5;
+    let netY = -canvasHeight*0.2;  // Starting at the top of the canvas
+    let netSpeed = 1;  // Speed of the net falling
+    
+    const netWidth = canvasWidth * 0.1;  // Scale net width (adjust if needed)
+    const netHeight = canvasHeight * 0.2;  // Scale net height (adjust if needed)
+
+
+
+    /*--------Big Shark movement variables--------*/
+    const bigSharkWidth = canvasWidth * 0.1; // Scale bigShark width (adjust if needed)
+    const bigSharkHeight = canvasHeight * 0.2; // Scale bigShark height (adjust if needed)
+        
+    const bigSharkX = canvasWidth / 2; // middle 
+    let bigSharkY = canvasHeight / 2;
+
+       
+
+    /*--------Door variables--------*/
+
+    const doorWidth = canvasWidth * 0.1; // Scale door width (adjust if needed)
+    const doorHeight = canvasHeight * 0.2; // Scale door height (adjust if needed)
+        
+    const doorX = canvasWidth - doorWidth - 10; // 10px from the right edge
+    const doorY = (canvasHeight - doorHeight) / 2; // Vertically centered
+
+
+
+    /*--------Fish variables--------*/
+
+    let fishX = 50; // Starting X position on the left side
+    let fishY = canvasHeight / 2; // Vertically centered
+    let fishSpeed = 2; // Speed of the fish
+
+    const fishWidth = canvasWidth * 0.1; // Scale fish width (adjust if needed)
+    const fishHeight = canvasHeight * 0.2; // Scale fish height (adjust if needed)
+
+
+    const scaledFishWidth = canvasWidth * 0.1; // Scaled fish width
+    const scaledFishHeight = canvasHeight * 0.2; // Scaled fish height
+
+
+
+    /*--------Text Box variables--------*/
+
+    const borderWidth = canvasWidth * 0.1;  // Scale border width
+    const borderHeight = canvasHeight * 0.2; // Scale border height
+
+    const borderX = 10;  // Position at top left
+    const borderY = 10;  // Position at top left
+
+    const fontSize = ((borderHeight+borderWidth)/2) * 0.13; // Adjust multiplier as needed
+
+
+
+    // Keyboard movement variables
+    let moveUp = false;
+    let moveDown = false;
+    let moveLeft = false;
+    let moveRight = false;
+
+
+
+
+
+
+
+    /*==========================================================================================================*/
+    /*=============================================DRAW OBJECTS=============================================*/
+    /*==========================================================================================================*/
+
+
+    // Function to draw and animate the fish
+    function drawFish() {
+      
+        // Draw the fish at the current X and Y position
+        ctx.drawImage(fish, fishX, fishY, fishWidth, fishHeight);
+    }
+
+
+    // Function to draw and animate the shark with scaling
+    function drawShark() {
+       
+        // Draw the shark on the right side of the screen with scaling
+        ctx.drawImage(greyshark, sharkX, sharkY, sharkWidth, sharkHeight);
+
+
+        // Move the shark (up or down)
+        sharkY += sharkSpeed * sharkDirection;
+
+        // Reverse the direction when hitting top or bottom of the canvas
+        if (sharkY + canvasHeight * 0.2 > canvasHeight || sharkY < 0) {
+            sharkDirection *= -1; // Change direction when hitting top or bottom
+        }
+
+        
+    }
+
+
+    
+    // Function to draw the bigShark image
+    function drawBigShark() {
+
+       // Draw the bigShark image on the canvas
+        ctx.drawImage(bigshark, bigSharkX, bigSharkY, bigSharkWidth, bigSharkHeight);
+    }
+
+
+
+    // Function to draw the door image
+    function drawDoor() {
+   
+        // Draw the door on the canvas
+        ctx.drawImage(door, doorX, doorY, doorWidth, doorHeight);
+    }
+
+
+    // Function to draw and animate the net
+    function drawNet() {
+      
+        // Draw the net on the canvas
+        ctx.drawImage(net, netX, netY, netWidth, netHeight);
+
+
+        // Move the net vertically down
+        netY += netSpeed;
+
+        // Reset the net position to the top when it reaches the bottom
+        if (netY + canvasHeight * 0.2 > canvasHeight+150 ) {
+            netY = -canvasHeight*0.2; // Reset to top of the canvas
+        }
+
+        
+    }
+
+    // Function to draw the score box and display score and level
+    function drawScoreBox() {
+       
+        // Draw the border image (score box) on the canvas
+        ctx.drawImage(scoreBorder, borderX, borderY, borderWidth, borderHeight);
+
+       
+        // Set font for the score and level text (scaled font size)
+        ctx.font = `${fontSize}px Arial`;
+        ctx.fillStyle = 'white'; // Set text color to white
+
+        // Display the score inside the score box
+        ctx.fillText(`Score: ${score}`, borderX + borderWidth/4.5, borderY + fontSize*2.5); // Offset for padding
+
+        // Display the level inside the score box
+        ctx.fillText(`Level: ${level}`, borderX + borderWidth/4.5, borderY + fontSize * 3.7); // Offset for padding
+
+        // Display the timer inside the score box
+        ctx.fillText(`Timer: ${timer}`, borderX + borderWidth/4.5, borderY + fontSize * 5); // Offset for padding
+    }
+
+
+
+
+
     // Function to scale and draw the background image
     function drawBackground() {
         const scale = Math.max(canvasWidth / backgroundImage.width, canvasHeight / backgroundImage.height);
@@ -102,40 +281,120 @@
         ctx.drawImage(backgroundImage, x, y, backgroundImage.width * scale, backgroundImage.height * scale);
     }
 
-    // Wait for the background image to load, then draw it
-    backgroundImage.onload = function() {
-        drawBackground();
-    };
 
 
-    // Score variables
-    let score = 0;
-    let level = 1;
-    let timer=20;
 
 
-    // Shark movement variables
-    let sharkY = canvasHeight / 2;
-    let sharkSpeed = 1;
-    let sharkDirection = 1; // 1 means down, -1 means up
+    /*==========================================================================================================*/
+    /*=============================================CHECK COLLISIONS=============================================*/
+    /*==========================================================================================================*/
 
 
-     // net movement variables
-    let netY = 0;  // Starting at the top of the canvas
-    const netSpeed = 1.5;  // Speed of the net falling
+
+    // Function to detect collision with the net
+    function checkFishNetCollision() {
+        if (
+            // Check if the fish's right edge is touching or inside the net's left edge, with a small threshold
+            fishX + scaledFishWidth >= netX + netX*0.2  &&
+
+            // Check if the fish's left edge is touching or inside the net's right edge, with a small threshold
+            fishX+fishX*0.2 <= netX + netWidth  &&
+
+            // Check if the fish's bottom edge is touching or inside the net's top edge, with a small threshold
+            fishY + scaledFishHeight >= netY+netY*0.2 &&
+
+            // Check if the fish's top edge is touching or inside the net's bottom edge, with a small threshold
+            fishY+fishY*0.2 <= netY + netHeight 
+        ) {
+            netAudio.play();
+            score=0;
+            stopFishMovement();
+            gameOverFlag = true;
+            gameOver("GAME OVER");
+            alert("CAUGHT BY NET! BETTER LUCK NEXT TIME");
+            refreshPageAfterDelay(2000);
+
+        }
+    }
+
+
+
+
+    // Function to detect collision with the big shark
+    function checkFishBigSharkCollision() {
+        if (
+            fishX + scaledFishWidth > bigSharkX + bigSharkX*0.1 &&
+            fishX+fishX*0.2  < bigSharkX + bigSharkWidth &&
+            fishY + scaledFishHeight > bigSharkY+ bigSharkY*0.1  &&
+            fishY+fishY*0.2  < bigSharkY + bigSharkHeight
+        ) {
+            hitAudio.play();
+            score=0;
+            stopFishMovement();
+            gameOverFlag = true;
+            gameOver("GAME OVER");
+            alert("CAUGHT BY THE BIG SHARK! BETTER LUCK NEXT TIME");
+            refreshPageAfterDelay(2000);
+        }
+    }
+
+    // Function to detect collision with the regular shark
+    function checkFishSharkCollision() {
+        if (
+            fishX + scaledFishWidth > sharkX + sharkX*0.1 &&
+            fishX+fishX*0.2 < sharkX + sharkWidth &&
+            fishY + scaledFishHeight > sharkY + sharkY*0.1&&
+            fishY+fishY*0.2 < sharkY + sharkHeight
+        ) {
+            hitAudio.play();
+            score=0;
+            stopFishMovement();
+            gameOverFlag = true;
+            gameOver("GAME OVER");
+            alert("CAUGHT BY THE GRAY SHARK! BETTER LUCK NEXT TIME");
+            refreshPageAfterDelay(2000);
+        }
+    }
+
+    // Function to detect collision with the door (home)
+    function checkFishDoorCollision() {
+        if (!levelCleared && 
+            fishX + scaledFishWidth > doorX + doorX*0.1  &&
+            fishX +fishX*0.05< doorX + doorWidth &&
+            fishY + scaledFishHeight > doorY + doorY*0.2 &&
+            fishY +fishY*0.05< doorY + doorHeight
+        ) {
+            if(level==3)
+            {
+                victoryAudio.play();
+                alert("WOHOOOOOOOOOOO! CONGRATULATIONS! YOU HAVE WON THE GAME.");
+                gameOverFlag=true;
+                gameOver("WINNING CELEBRATIONS!");
+                return;
+            }{
+                
+                boostAudio.play();
+                alert("CONGRATULATIONS! LEVEL "+level+" CLEARED.");
+                levelCleared=true;
+                score+=100;
+                stopFishMovement();
+                resetFish();
+                nextLevel();
     
-
-    // Fish movement variables
-    let fishX = 50; // Starting X position on the left side
-    let fishY = canvasHeight / 2; // Vertically centered
-    const fishSpeed = 3; // Speed of the fish
+            }
+        }
+    }
 
 
-    // Keyboard movement variables
-    let moveUp = false;
-    let moveDown = false;
-    let moveLeft = false;
-    let moveRight = false;
+
+
+
+
+
+    /*==========================================================================================================*/
+    /*=============================================LOGICAL METHODS=============================================*/
+    /*==========================================================================================================*/
+
 
 
 
@@ -155,11 +414,29 @@
         if (e.key === "ArrowRight") moveRight = false;
     });
 
+
+
+
+    // Function to stop the fish movement
+    function stopFishMovement() {
+        moveUp = false;
+        moveDown = false;
+        moveLeft = false;
+        moveRight = false;
+        
+        // Simulate keyup events
+        const event = new KeyboardEvent('keyup', { key: "ArrowUp" });
+        window.dispatchEvent(event);
+        window.dispatchEvent(new KeyboardEvent('keyup', { key: "ArrowDown" }));
+        window.dispatchEvent(new KeyboardEvent('keyup', { key: "ArrowLeft" }));
+        window.dispatchEvent(new KeyboardEvent('keyup', { key: "ArrowRight" }));
+    }
+
+
+    
     // Function to update fish position based on keyboard input
     function updateFishPosition() {
-        const scaledFishWidth = fish.width * 0.5; // Scaled fish width
-        const scaledFishHeight = fish.height * 0.5; // Scaled fish height
-
+     
         if (moveUp && fishY > 0) fishY -= fishSpeed; // Move up
         if (moveDown && fishY + scaledFishHeight < canvasHeight) fishY += fishSpeed; // Move down
         if (moveLeft && fishX > 0) fishX -= fishSpeed; // Move left
@@ -168,118 +445,107 @@
 
 
 
-
-
-    // Function to draw and animate the fish
-    function drawFish() {
-        const fishWidth = fish.width * 0.5; // Scale fish width (adjust if needed)
-        const fishHeight = fish.height * 0.5; // Scale fish height (adjust if needed)
-
-        // Draw the fish at the current X and Y position
-        ctx.drawImage(fish, fishX, fishY, fishWidth, fishHeight);
+    // Reset the fish's position (you can adjust it as per the game design)
+    function resetFish() {
+        fishX = 50;
+        fishY = canvasHeight / 2;  // Reset to the bottom
     }
 
-
-    // Function to draw and animate the shark with scaling
-    function drawShark() {
-        // Move the shark (up or down)
-        sharkY += sharkSpeed * sharkDirection;
-
-        // Reverse the direction when hitting top or bottom of the canvas
-        if (sharkY + greyshark.height * 0.3 > canvasHeight || sharkY < 0) {
-            sharkDirection *= -1; // Change direction when hitting top or bottom
-        }
-
-        // Set the desired size of the shark (scaled down)
-        const sharkWidth = greyshark.width * 0.3; // 30% of original width
-        const sharkHeight = greyshark.height * 0.3; // 30% of original height
-
-        // Draw the shark on the right side of the screen with scaling
-        ctx.drawImage(greyshark, canvasWidth - sharkWidth - 150, sharkY, sharkWidth, sharkHeight);
-    }
-
-    // Variable for bigShark Y position
-    let bigSharkY = canvasHeight / 2;
-
-    // Function to draw the bigShark image
-    function drawBigShark() {
-        const bigSharkWidth = bigshark.width * 0.2; // Scale bigShark width (adjust if needed)
-        const bigSharkHeight = bigshark.height * 0.3; // Scale bigShark height (adjust if needed)
-        
-        const bigSharkX = canvasWidth / 2; // middle 
-        const bigSharkYPosition = bigSharkY; // Use the updated bigSharkY value
-
-        // Draw the bigShark image on the canvas
-        ctx.drawImage(bigshark, bigSharkX, bigSharkYPosition, bigSharkWidth, bigSharkHeight);
+    // Update function to check all collisions during the game loop
+    function updateCollisions() {
+        checkFishNetCollision();
+        checkFishBigSharkCollision();
+        checkFishSharkCollision();
+        checkFishDoorCollision();
     }
 
 
 
 
 
-    // Function to draw the door image
-    function drawDoor() {
-        // Calculate the X position for the door to be horizontally centered
-        const doorWidth = door.width * 0.4; // Scale door width (adjust if needed)
-        const doorHeight = door.height * 0.5; // Scale door height (adjust if needed)
-        
-        const doorX = canvasWidth - doorWidth - 10; // 10px from the right edge
-        const doorY = (canvasHeight - doorHeight) / 2; // Vertically centered
+ 
 
-        // Draw the door on the canvas
-        ctx.drawImage(door, doorX, doorY, doorWidth, doorHeight);
-    }
+    // Game Over function
+    function gameOver(message) {
+        // Set the opacity for the rectangle background
+        ctx.globalAlpha = 0.7; // 0 is fully transparent, 1 is fully opaque
+        ctx.fillStyle = 'black'; // Rectangle color (you can change it)
+        ctx.fillRect(canvasWidth / 4, canvasHeight / 4, canvasWidth / 2, canvasHeight / 2); // Rectangle centered on screen
 
-    // Function to draw and animate the net
-    function drawNet() {
-        // Move the net vertically down
-        netY += netSpeed;
+        // Reset opacity to 1 for drawing the text
+        ctx.globalAlpha = 1;
 
-        // Reset the net position to the top when it reaches the bottom
-        if (netY + net.height * 0.2 > canvasHeight) {
-            netY = 0; // Reset to top of the canvas
-        }
+        // Set font size and style
+        let finalFontSize = (canvasWidth + canvasHeight) * 0.015;
+        ctx.font = `${finalFontSize}px Arial`;
+        ctx.fillStyle = 'white'; // Text color
 
-        // Set the desired size of the net (scaled down)
-        const netWidth = net.width;  // Scale net width (adjust if needed)
-        const netHeight = net.height;  // Scale net height (adjust if needed)
+        // Measure text width to center it horizontally
+        let textWidth = ctx.measureText(message).width;
+        let textX = canvasWidth / 2 - textWidth / 2;
+        let textY = canvasHeight / 2 + finalFontSize / 3; // Slight adjustment to center vertically
 
-        // Draw the net on the canvas
-        ctx.drawImage(net, canvasWidth/2-400, netY, netWidth, netHeight);
-    }
+        // Display the centered text
+        ctx.fillText(message, textX, textY);
 
-
-
-
-    // Function to draw the score box and display score and level
-    function drawScoreBox() {
-        // Draw the score border image (box)
-        const borderWidth = scoreBorder.width * 0.6;  // Scale border width
-        const borderHeight = scoreBorder.height * 0.6; // Scale border height
-
-        const borderX = 10;  // Position at top left
-        const borderY = 10;  // Position at top left
-
-        // Draw the border image (score box) on the canvas
-        ctx.drawImage(scoreBorder, borderX, borderY, borderWidth, borderHeight);
-
-        // Set font for the score and level text
-        ctx.font = '16px Arial';
-        ctx.fillStyle = 'white'; // Set text color to white
-
-
-        // Display the score inside the score box
-        ctx.fillText(`Score: ${score}`, borderX + 50, borderY + 38); // Offset for padding
-
-        // Display the level inside the score box
-        ctx.fillText(`Level: ${level}`, borderX + 50, borderY + 55); // Offset for padding
-
-        // Display the level inside the score box
-        ctx.fillText(`Timer: ${timer}`, borderX + 50, borderY + 75); // Offset for padding
+        // Stop the game loop or animations here
+        stopFishMovement();
+        clearInterval(timerInterval); // Ensure timer stops when game over
     }
 
 
 
+
+
+
+
+    function nextLevel() {
+        level++;
+
+        if (level === 2) {
+            backgroundImage.src="images/level2.png";
+            score = 200;
+            timer = 15;
+            sharkSpeed = 1.5;  // Increase shark speed
+            netSpeed = 1.5;    // Increase net speed
+            levelCleared=false;
+
+        } else if (level === 3) {
+            backgroundImage.src="images/level3.png";
+            score = 300;
+            timer = 10;
+            sharkSpeed = 3;  // Increase shark speed
+            netSpeed = 3;    // Increase net speed
+            levelCleared=false;
+        } 
+
+        clearInterval(timerInterval);
+        startTimer();
+    }
+
+
+    // Function to refresh the page after a specified delay (in milliseconds)
+    function refreshPageAfterDelay(delay) {
+        setTimeout(function() {
+            location.reload(); // Reloads the page
+        }, delay);
+    }
+
+
+    // Set the canvas size initially
+    function setCanvasSize() {
+        canvasWidth = window.innerWidth * 0.8;
+        canvasHeight = window.innerHeight * 0.7;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+    }
+
+
+
+    // Wait for the background image to load, then draw it
+    backgroundImage.onload = function() {
+        drawBackground();
+    };
 
     // Update the bigSharkY position every 1 second
     setInterval(function() {
@@ -293,8 +559,42 @@
         drawBackground();
     });
 
+    document.addEventListener("keydown", () => {
+        backgroundAudio.play();
+        backgroundAudio.loop=true;
+    });
+
+
+
+
+    // Function to start the timer
+    function startTimer() {
+        timerInterval = setInterval(function() {
+            if (timer > 0) {
+                timer--; // Decrease timer by 1 every second
+            } else {
+
+                deathAudio.play();
+                clearInterval(timerInterval); // Stop the timer
+                gameOverFlag = true;
+                gameOver('Game Over'); // Call gameOver function when timer reaches 0
+                alert("Time Up! Try Again");
+            }
+        }, 1000); // 1000 milliseconds = 1 second
+    }
+
+
+
+
+
     // Game loop to keep updating the canvas
     function gameLoop() {
+
+        if (gameOverFlag) {
+            return; // Stop further game updates if the game is over
+        }
+
+
         ctx.clearRect(0, 0, canvasWidth, canvasHeight); // Clear the canvas
         drawBackground(); // Redraw the background
         drawShark(); // Draw and animate shark
@@ -304,16 +604,44 @@
         drawFish(); // Draw the fish
         updateFishPosition();
         drawScoreBox();
-        requestAnimationFrame(gameLoop); // Keep the loop running
+
+        updateCollisions();  // Call the collision check
+
+
+         
+        requestAnimationFrame(gameLoop); 
+
     }
+
+
+    // Add touch event listeners for continuous touch movement
+    window.addEventListener('touchstart', touchMoveFish);
+    window.addEventListener('touchmove', touchMoveFish);
+
+    function touchMoveFish(touchEvent) {
+        touchEvent.preventDefault(); // Prevents default scrolling behavior
+
+        // Get the canvas offset
+        var rect = canvas.getBoundingClientRect();
+
+        // Calculate touch coordinates relative to the canvas
+        let touchX = touchEvent.touches[0].clientX - rect.left;
+        let touchY = touchEvent.touches[0].clientY - rect.top;
+
+        // Update the fish's position to follow the touch coordinates
+        fishX = touchX;
+        fishY = touchY;
+    }
+
+
 
     // Initial canvas setup and preload resources
     setCanvasSize();
     gameLoop(); // Start the game loop
+    startTimer();
+    
+    
 
-    // Play background music
-    backgroundAudio.loop = true;
-    backgroundAudio.play();
 
 </script>
 
