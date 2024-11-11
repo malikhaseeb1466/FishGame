@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+    <body>
+		
+
+        <div align="center">
+        	<canvas id="canvas1" width="1000" height="500" tabindex="0" style="border:1px solid #000000;">
+        	</canvas>
+        </div>
+
+
+        
+<script>
+    //get the animation frame depending on the browser engine
+    var requestAnimationFrame = window.requestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.msRequestAnimationFrame;
+
+    var canvas = document.getElementById("canvas1");
+    var ctx = canvas.getContext("2d");
+
+    var info = document.getElementById("info");
+
+    let delayBetweenFrames = 100;
+
+    ctx.font = "14px bold";
+
+    let level = 1;
+
+    let time = 60;
+
+    let fishspeed = 80;
+
+    let score = 0;
+
+    let lvl1Image = new Image();
+    lvl1Image.src = "level1.png";
+
+    let scoreBorder = new Image();
+    scoreBorder.src = "border.png";
+
+    let borderX = canvas.width - 800;
+    let borderY = canvas.height - 500;
+    
+    
+    //door
+    let door = new Image();
+    door.src = "door.png";
+
+    let doorX = canvas.width - 100;
+    let doorY = canvas.height - 380;
+
+    let door2X = 1000;
+    let door2Y = 1000;
+
+    let door3X = 1000;
+    let door3Y = 1000;
+    
+    
+    // fish
+    let fish = new Image();
+    fish.src = "fish.png";
+
+    let fishX = canvas.width - 750;
+    let fishY = canvas.height - 250;
+    
+    //boost
+    let boost = new Image();
+    boost.src = "boost.png";
+
+    let boostX = 900;
+    let boostY = 900;
+    
+    //grey shark
+    let greyshark = new Image();
+    greyshark.src = "greyshark.png";
+
+    let greysharkX = canvas.width - 400;
+    let greysharkY = canvas.height - 230;
+
+    let greyshark2X = canvas.width - 500;
+    let greyshark2Y = canvas.height - 350;
+
+    let greyshark3X = 1200;
+    let greyshark3Y = 1200;
+
+    let greyshark4X = 1200;
+    let greyshark4Y = 1200;
+    
+    
+    
+    //arrows
+    let uparrow = new Image();
+    uparrow.src = "uparrow.png";
+
+    let upX = canvas.width - 720;
+    let upY = canvas.height - 150;
+
+    let downarrow = new Image();
+    downarrow.src = "downarrow.png";
+
+    let downX = canvas.width - 720;
+    let downY = canvas.height - 75;
+
+    let rightarrow = new Image();
+    rightarrow.src = "rightarrow.png";
+
+    let rightX = canvas.width - 670;
+    let rightY = canvas.height - 110;
+
+    let leftarrow = new Image();
+    leftarrow.src = "leftarrow.png";
+
+    let leftX = canvas.width - 770;
+    let leftY = canvas.height - 110;
+    
+    
+    
+    //blue shark
+    let blueshark = new Image();
+    blueshark.src = "blueshark.png";
+
+    let bluesharkX = 1000;   
+    let bluesharkY = 1000;
+
+    let bluesharkX = 1000;   
+    let bluesharkY = 1000;
+    
+    
+    
+    //net 
+    let net = new Image();
+    net.src = "net.png";
+
+    let netX = 900;
+    let  netY = 900;
+
+    let net2X = 900;
+    let  net2Y = 900;
+
+    let net3X = 900;
+    let  net3Y = 900;
+
+    let net4X = 900;
+    let  net4Y = 900;
+    
+    
+    //big shark
+    let bigshark = new Image();
+    bigshark.src = "bigshark.png";
+
+    let bigsharkX = 1000;
+    let bigsharkY = 1000;
+    
+    //audios
+    var backgroundAudio = new Audio("gamemusic.mp3");
+    var hitAudio = new Audio("hit.mp3");
+    var victoryAudio = new Audio("victory.mp3");
+    var deathAudio = new Audio("death.mp3");
+    var netAudio = new Audio("net.mp3");
+    var boostAudio = new Audio("boost.mp3");
+
+
+    //
+    let greysharkGoingUp = true;
+    let greyshark2Goingdown = true;
+    let greyshark3GoingUp = true;
+    let greyshark4Goingdown = true;
+    
+    let bluesharkGoingdown = true;
+    let bluesharkGoingdown = true;
+    let bigsharkGoingdown = true;
+    let orangeGoingLeft = true;
+
+    //orangeball
+    let orangeBallX = 1000;
+    let orangeBallY = 500;
+    
+        window.addEventListener('keydown', movepacman);
+    
+    function movepacman(evt) { //this is the event handler
+    //handle space bar to shoot the fireball
+
+    //handle up arrow to move fireball up
+    if (evt.code == 'uparrow') {
+        fishY -= 10;
+        
+    }
+    //handle down arrow to move fireball down
+    if (evt.code == 'downarrow') {
+        fishY += 10;
+        
+    }
+    if (evt.code == 'rightarrow') {
+        fishX += 10;
+        
+    }
+    
+    if (evt.code == 'leftarrow') {
+        fishX -= 10;
+        
+    }
+    
+}
+
+    
+    
+    window.addEventListener('touchstart', touchMovefish);
+    function touchMovefish(touchEvent){
+
+    var rect = canvas.getBoundingClientRect(); //to get canvas offsets
+
+
+    let touchX = touchEvent.changedTouches[0].clientX - rect.left;
+    let touchY = touchEvent.changedTouches[0].clientY - rect.top;
+    
+            if (getDistanceDownArrow(touchX, touchY) <= 25){
+                fishY += 10;
+                
+            }
+
+            else if (getDistanceUpArrow(touchX, touchY) <= 25){
+                fishY -= 10;
+                
+            }
+
+            else if (getDistanceRightArrow(touchX, touchY) <= 25){
+                fishX += 10;
+                
+            }
+
+            else if (getDistanceLeftArrow(touchX, touchY) <= 25){
+                fishX -= 10;
+                
+            }
+
+            
+
+    }
+    
+    
+    
+    //grey shark and fish
+    
+    function getDistancefishandgreyshark() {
+                //code for distance between two points
+                var xDelta = (fishX - greysharkX);
+                var yDelta = (fishY - greysharkY);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+    
+    function getDistancefishandgreyshark2() {
+                //code for distance between two points
+                var xDelta = (fishX - greyshark2X);
+                var yDelta = (fishY - greyshark2Y);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+
+    function getDistancefishandgreyshark3() {
+                //code for distance between two points
+                var xDelta = (fishX - greyshark3X);
+                var yDelta = (fishY - greyshark3Y);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+    
+    function getDistancepacmanandgreenvirus4() {
+                //code for distance between two points
+                var xDelta = (fishX - greyshark4X);
+                var yDelta = (fishY - greyshark4Y);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }            
+
+
+    // fish and door
+    
+    function getDistancefishanddoor() {
+                //code for distance between two points
+                var xDelta = (fishX - doorX);
+                var yDelta = (fishY - doorY);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+
+    function getDistancefishanddoor2() {
+                //code for distance between two points
+                var xDelta = (fishX - door2X);
+                var yDelta = (fishY - door2Y);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+
+    function getDistancefishanddoor3() {
+                //code for distance between two points
+                var xDelta = (fishX - door3X);
+                var yDelta = (fishY - door3Y);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+    
+    // boost and fish
+    
+    
+            function getDistancefishandboost() {
+                //code for distance between two points
+                var xDelta = (fishX - boostX);
+                var yDelta = (fishY - boostY);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+    
+    // fish and net
+    
+    function getDistancefishandnet() {
+                //code for distance between two points
+                var xDelta = (fishX - netX);
+                var yDelta = (fishY - netY);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+    
+    function getDistancefishandnet2() {
+                //code for distance between two points
+                var xDelta = (fishX - net2X);
+                var yDelta = (fishY - net2Y);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+    
+    function getDistancefishandnet3() {
+                //code for distance between two points
+                var xDelta = (fishX - net3X);
+                var yDelta = (fishY - net3Y);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+    
+    function getDistancefishandnet4() {
+                //code for distance between two points
+                var xDelta = (fishX - net4X);
+                var yDelta = (fishY - netY);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+            
+    
+    //orange ball
+    function getDistancefishandCircle() {
+                //code for distance between two points
+                var xDelta = (fishX - orangeBallX);
+                var yDelta = (fishY - orangeBallY);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+    
+    // big shark
+    function getDistancefishandbigshark() {
+                //code for distance between two points
+                var xDelta = (fishX - bigsharkX);
+                var yDelta = (fishY - bigsharkY);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+
+    // blue shark
+    function getDistancefishandblueshark() {
+                //code for distance between two points
+                var xDelta = (fishX - bluesharkX);
+                var yDelta = (fishY - bluesharkY);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+
+    function getDistancefishandblueshark2() {
+                //code for distance between two points
+                var xDelta = (fishX - blueshark2X);
+                var yDelta = (fishY - blueshark2Y);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+
+
+    //arrows        
+    function getDistanceuparrow(touchX, touchY) {
+                //code for distance between two points
+                var xDelta = (touchX - upX);
+                var yDelta = (touchY - upY);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+
+    function getDistancedownarrow(touchX, touchY) {
+                //code for distance between two points
+                var xDelta = (touchX - downX);
+                var yDelta = (touchY - downY);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+
+    function getDistancerightarrow(touchX, touchY) {
+                //code for distance between two points
+                var xDelta = (touchX - rightX);
+                var yDelta = (touchY - rightY);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+
+    function getDistanceleftarrow(touchX, touchY) {
+                //code for distance between two points
+                var xDelta = (touchX - leftX);
+                var yDelta = (touchY - leftY);  
+                return Math.sqrt(Math.pow((xDelta), 2) + Math.pow((yDelta), 2));
+            }
+
+    
+    //time
+    function displayTimeRemaining() {
+                setTimeout(() => {
+                    time--;
+                    displayTimeRemaining();
+                    if (time <= 0) {
+              
+              alert('Time is up!');
+              window.location.reload();
+            }
+                }, 1000);
+            }
+
+            function playgamemusic() {
+                backgroundAudio.play();
+                audio.loop = true;
+			    audio.play();
+            }
+
+            function playvictorymusic() {
+                victoryAudio.play();
+            }
+    
+    function animate() {
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        setTimeout(function() {
+            requestAnimationFrame(animate);
+            
+            
+            if (greysharkGoingUp){
+                greysharkY = greysharkY - 5;
+            }
+
+            else {
+                greysharkY  = greysharkY  + 5;
+            }
+
+            if (greysharkY == canvas.height - 430) {
+                greysharkGoingUp = false;
+            }
+
+            if (greysharkY == canvas.height - 20) {
+                greysharkGoingUp = true;
+            }
+
+            if (greyshark3GoingUp){
+                greyshark3Y = greyshark3Y - 5;
+            }
+
+            else {
+                greyshark3Y  = greyshark3Y  + 5;
+            }
+
+            if (greyshark3Y == canvas.height - 430) {
+                greyshark3GoingUp = false;
+            }
+
+            if (greyshark3Y == canvas.height - 20) {
+                greyshark3GoingUp = true;
+            }
+
+
+            if (greyshark2Goingdown){
+                greyshark2X = greyshark2X + 10;
+            }
+            
+            else {
+                greyshark2X  = greyshark2X  - 10;
+            }
+
+
+            if (greysharkX == canvas.width - 200) {
+                greyshark2Goingdown = false;
+            }
+
+            if (greyshark2X == 200) {
+                greyshark2Goingdown = true;
+            }
+
+            if (greyshark4Goingdown){
+                greyshark4X = greyshark4X + 10;
+            }
+            
+            else {
+                greyshark4X  = greyshark4X  - 10;
+            }
+
+
+            if (greyshark4X == canvas.width - 200) {
+                greyshark4Goingdown = false;
+            }
+
+            if (greyshark4X == 200) {
+                greyshark4Goingdown = true;
+            }
+            
+            if (bluesharkGoingdown) {
+             bluesharkY = bluesharkY + 10;
+            }
+
+            else {
+            bluesharkY = 0;
+            bluesharkGoingdown = true;
+            }
+
+            if (redvirus
+                bluesharkY == canvas.width) {
+            bluesharkGoingdown = false;
+            }
+
+            if (blueshark2Goingdown){
+                blueshark2Y = blueshark2Y + 10;
+            }
+            
+            else {
+                blueshark2Y  = 0;
+                blueshark2Goingdown = true;
+            }
+
+
+            if (blueshark2Y == canvas.width ) {
+                blueshark2Goingdown = false;
+            }
+            
+            
+            if (bigsharkGoingdown){
+            if(bigsharkX < canvas.width - 200){
+                bigsharkX = bigsharkX + 20;
+            }
+            else{
+                bigsharkGoingdown = false;
+            }
+                            
+            }
+            
+            else {
+            if(bigsharkX > 200){
+                bigsharkX  = bigsharkX  - 20;
+            }
+            else{
+                
+                bigsharkGoingdown = true;
+            }
+            
+            } 
+            
+            if (level == 1){
+            backgroundAudio.play();
+            
+            }
+            if (level == 2){
+            backgroundAudio.play();
+            
+            }
+            if (level == 3){
+            backgroundAudio.play();
+            }
+            
+            if(orangeGoingLeft){
+            orangeBallX = orangeBallX - 15;
+            orangeBallY = orangeBallY -8;
+            }
+            
+            else if(orangeGoingLeft && level == 2){
+            orangeBallX = orangeBallX - 20;
+            orangeBallY = orangeBallY -8;
+            }
+            
+            else if(orangeGoingLeft && level == 3){
+            orangeBallX = orangeBallX - 25;
+            orangeBallY = orangeBallY -8;
+            
+            }
+            
+            if(orangeBallX <= 0){
+
+            orangeBallX = 800;
+            orangeBallY = 500;
+            
+            }
+            
+            if(getDistancepacmanandCircle()<50){
+
+            score = 0;
+            
+            
+            }
+            
+            //handle collision and hit 
+            
+            if (getDistancefishandgreyshark() < 50) {
+                
+                //increment the hits
+                
+                score++;
+                hitAudio.play();
+                greysharkX = 1500;
+                greysharkY = 1500;
+                greyshark3X = canvas.width - 400;
+                greyshark3Y = canvas.height - 230;
+                
+                }
+            
+            if (getDistancefishandgreyshark2() < 50) {
+                
+                //increment the hits
+                score++;
+                hitAudio.play();
+                greyshark2X = 1500;
+                greyshark2Y = 1500;
+                greyshark4X = canvas.width - 500;
+                greyshark4Y = canvas.height - 230;
+            
+            }
+            
+            if (getDistancefishandgreyshark3() < 50) {
+                //increment the hits
+                    
+                score++;
+                hitAudio.play();
+                greyshark3X = 1500;
+                greysharks3Y = 1500;
+            
+            
+            }    
+            
+            if (getDistancefishandgreyshark4() < 50) {
+                //increment the hits
+                score++;
+                hitAudio.play();
+                greyshark4X = 1500;
+                greyshark4Y = 1500;
+            }
+            
+            if (fishX == canvas.width){
+            
+             fishX = canvas.width - 750;
+             fishY = canvas.height - 250;
+            
+            }
+            
+            if (getDistancefishandboost() < 50){
+                time += 5; 
+                boostAudio.play();
+                fishspeed += 50;
+                boostX = 1000;
+                boostY = 1250;
+            
+            }
+            
+            if(getDistancefishandnet() < 50){
+                time -= 5;
+                netAudio.play();
+                fishspeed -= 50;
+                netX = 1300;
+                netY = 1450;
+            
+            }
+            if(getDistancefishandnet2() < 50){
+                time -= 5;
+                netAudio.play();
+                fishspeed -= 50;
+                net2X = 1300;
+                net2Y = 1450;
+            }
+            if(getDistancefishandnet3() < 50){
+                time -= 5;
+                netAudio.play();
+                fishspeed -= 50;
+                net3X = 1300;
+                net3Y = 1450;
+            }
+            
+            if(getDistancefishandnet4() < 50){
+                time -= 5;
+                netAudio.play();
+                netspeed -= 50;
+                net4X = 1300;
+                net4Y = 1450;
+            
+            }
+            
+            if(getDistancefishandblueshark() < 50){
+                score --;
+                deathAudio.play();
+                blueshark = Math.random() * 100 - 50;
+                blueshark= 15;
+                
+                if(level == 2){
+                    
+                boostX = 400;
+                boostY = 250;
+
+                netX = 300;
+                netY = 450;
+
+
+        }   
+    }
+            
+            if(getDistancefishandblueshark2() < 50){
+                score --;
+                deathAudio.play();
+                blueshark2X = Math.random() * 100 - 50;
+                blueshark2Y = 15;
+                
+                if(level == 2){
+                    boostX = 400;
+                    boostY = 250;
+                    netX = 300;
+                    netY = 450;
+                
+                
+                } 
+                
+                
+    }
+
+    if (getDistancefishandbigshark() < 75) {
+        //increment the hits
+        score = 8;
+        level = 3;
+        deathAudio.play();
+        time = 30;
+        
+        fishX = canvas.width - 750;
+        fishY = canvas.height - 250;
+        
+        bluesharkX += Math.random() * 100 - 50;
+        bluesharkY += 20;
+        
+        blueshark2X += Math.random() * 100 - 50;
+        blueshark2Y += 20;
+        
+        boostX = 400;
+        boostY = 250;
+        
+        netX = 400;
+        netY = 300;
+        
+        net2X = 300;
+        net2Y = 250;
+        
+        net3X = 450;
+        net3Y = 300;
+        
+        net4X = 200;
+        net4Y = 400;    
+        
+        greysharkY = 500;
+        greysharkY = 300;
+        
+        greyshark2X = 300
+        greyshark2Y = 250;
+        
+        bigsharkX = 350;
+        bigsharkY = 200;
+    
+    
+    }
+            
+        if (score >= 0 && getDistancefishanddoor() < 50) {
+        //increment the hits
+        level = 2;
+        lvl1Image.src = "level2.png";
+        time = 40;
+
+        
+
+        fishX = canvas.width - 750;
+        fishY = canvas.height - 250;
+
+
+        greysharkX = canvas.width - 400;
+        greysharkY = canvas.height - 230;
+
+        greyshark2X = canvas.width - 500;
+        greyshark2Y = canvas.height - 350;
+
+
+
+        if(level == 2){
+
+            boostX = 400;
+            boostY = 250;
+
+            netX = 400;
+            netY = 300;
+
+            net2X = 300;
+            net2Y = 250;
+            
+            blueshark2X += Math.random() * 100 - 50;
+            blueshark2Y += 15;
+           
+
+            bluesharkX += Math.random() * 100 - 50;
+            bluesharkY += 15;
+
+             door2X = canvas.width - 100;
+             door2Y = canvas.height - 380;
+
+             doorX = 1000;
+             doorY = 1000;
+
+            
+        }
+        
+    }
+
+            
+        if(score >= 0 && getDistancefishanddoor2() < 50 && level == 2) {
+
+        level = 3;
+        lvl1Image.src = "level3.png";
+        time = 30;
+
+        
+
+        fishX = canvas.width - 750;
+        fishY = canvas.height - 250;
+
+        bluesharkX += Math.random() * 100 - 50;
+        bluesharkY += 20;
+
+        blueshark2X += Math.random() * 100 - 50;
+        blueshark2Y += 20;
+
+        boostX = 400;
+        boostY = 250;
+
+        netX = 400;
+        netY = 300;
+
+        net2X = 300;
+        net2Y = 250;
+
+        net3X = 450;
+        net3Y = 300;
+
+        net4X = 200;
+        net4Y = 400;    
+
+        greysharkX = 500;
+        greysharkY = 300;
+
+        greyshark2X = 300;
+        greyshark2Y = 250;
+
+        if(level == 3){
+
+            bigsharkX = 350;
+            bigsharkY = 200;
+
+            door3X = canvas.width - 100;
+            door3Y = canvas.height - 380;
+
+            door2X = 1000;
+            door2Y = 1000;
+        }
+
+    }
+            
+            
+        if(score >= 0 && getDistancefishanddoor3() < 50 && level == 3) {
+
+        playVictoryMusic();
+        alert("YOU HAVE WON!");
+        window.location.reload();
+               
+        
+    }    
+    
+    scaleToFill(lvl1Image);
+
+    drawCircle(orangeBallX, orangeBallY, 15, "orange");
+
+    ctx.drawImage(fish, fishX, fishY, 100, 100);
+
+    ctx.drawImage(greyshark, greysharkX, greysharkY, 50, 50);
+
+    ctx.drawImage(greyshark, greyshark2X, greyshark2Y, 50, 50);
+
+    ctx.drawImage(greyshark, greyshark3X, greyshark3Y, 50, 50);
+
+    ctx.drawImage(greyshark, greyshark4X, greyshark4Y, 50, 50);
+
+    ctx.drawImage(blueshark, bluesharkX, bluesharkY, 50, 50);
+
+    ctx.drawImage(blueshark, blueshark2X, blueshark2Y, 50, 50);
+
+    ctx.drawImage(uparrow, upX, upY, 50, 50);
+
+    ctx.drawImage(downarrow, downX, downY, 50, 50);
+
+    ctx.drawImage(rightarrow, rightX, rightY, 50, 50);
+    
+    ctx.drawImage(leftarrow, leftX, leftY, 50, 50);
+
+    ctx.drawImage(leftarrow, leftX, leftY, 50, 50);
+
+    ctx.drawImage(scoreBorder, borderX, borderY, 200, 110);
+
+    ctx.drawImage(door , doorX, doorY, 50, 70);
+
+    ctx.drawImage(door , door2X, door2Y, 50, 70);
+
+    ctx.drawImage(door , door3X, door3Y, 50, 70);
+
+    ctx.drawImage(boost, boostX, boostY, 50, 50);
+
+    ctx.drawImage(net, netX, netY, 50, 50);
+
+    ctx.drawImage(net, net2X, net2Y, 50, 50);
+
+    ctx.drawImage(net, net3X, net3Y, 50, 50);
+    
+    ctx.drawImage(net, net4X, net4Y, 50, 50); 
+
+    ctx.drawImage(bigshark, bigsharkX, bigsharkY, 150, 200);
+
+
+    displayScoreArea();
+
+
+    //handleMouseDown();
+
+    //handleTouchStart();
+            
+            
+            if (greysharkY == 70 && level == 1){
+        greysharkGoingUp = false;
+    }
+            
+            if (greysharkY == 450 && level == 1){
+        greysharkGoingUp = true;
+    }
+            
+            if (greysharkY == 70 && level == 2){
+        greysharkGoingUp = false;
+    }
+            
+            if (greysharkY == 450 && level == 2){
+        greysharkGoingUp = true;
+    }
+            
+            if (greysharkY == 70 && level == 3){
+        greysharkGoingUp = false;
+    }
+            
+            if (greysharkY == 450 && level == 3){
+        greysharkGoingUp = true;
+    }
+            
+            if (bluesharkX < 0 || bluesharkX > canvas.width) {
+        bluesharkX = Math.random() * canvas.width;
+        bluesharkY = 10;
+    }
+            
+            
+            if (blueshark2X < 0 || blueshark2X > canvas.width) {
+        blueshark2X = Math.random() * canvas.width;
+        blueshark2Y = 10;
+    }
+     
+
+
+    
+
+
+   }, delayBetweenFrames);
+  }  
+    
+             function displayScoreArea() {
+                if(level == 1){
+                        ctx.fillStyle = "black";
+                        ctx.fillText("Score: " + score,  canvas.width - 780, canvas.height - 460);
+                        ctx.fillText("Level: " + level, canvas.width - 780, canvas.height - 440);
+                        ctx.fillText("Time Remaining: " + time, canvas.width - 780, canvas.height - 420);
+                }
+                if(level == 2){
+                        ctx.fillStyle = "black";
+                        ctx.fillText("Score: " + score,  canvas.width - 780, canvas.height - 460);
+                        ctx.fillText("Level: " + level, canvas.width - 780, canvas.height - 440);
+                        ctx.fillText("Time Remaining: " + time, canvas.width - 780, canvas.height - 420);
+                        
+                }
+                if(level == 3){
+                        ctx.fillStyle = "black";
+                        ctx.fillText("Score: " + score,  canvas.width - 780, canvas.height - 460);
+                        ctx.fillText("Level: " + level, canvas.width - 780, canvas.height - 440);
+                        ctx.fillText("Time Remaining: " + time, canvas.width - 780, canvas.height - 420);
+                        
+                }
+
+            }
+
+function drawCircle(x, y, radius, fillColor) {
+        
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, 2.0 * Math.PI); 
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+
+}
+
+    
+// we use the scale to fill function to create a background for the canvas and pass the background image through the parameteres,
+//instead of creating the images using sperate drawImages or functions for each background
+function scaleToFill(img){
+    // get the scale
+    var scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+    // get the top left position of the image
+    var x = (canvas.width / 2) - (img.width / 2) * scale;
+    var y = (canvas.height / 2) - (img.height / 2) * scale;
+    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+}
+
+
+
+            animate();
+           
+            
+            displayTimeRemaining();
+
+          
+    
+    
+
+
+
+
+     
+            
+            
+        
+
+
+
+
+
+    
+    
+        </script>
+            
+    </body>        
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Canvas with Background</title>
+    <style>
+         body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #89CFF0;
+            overflow: hidden;
+        }
+
+        canvas {
+            border: 5px solid #6495ED;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+    // Initialize the canvas and context
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let canvasWidth = window.innerWidth * 0.8;
+    let canvasHeight = window.innerHeight * 0.8;
+
+    // Set the canvas size initially
+    function setCanvasSize() {
+        canvasWidth = window.innerWidth * 0.9;
+        canvasHeight = window.innerHeight * 0.9;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+    }
+
+    
+    // Load all images
+    const backgroundImage = new Image();
+    backgroundImage.src = 'images/level1.png'; 
+
+    const lvl1Image = new Image();
+    lvl1Image.src = 'images/level1.png';
+
+    const scoreBorder = new Image();
+    scoreBorder.src = 'images/border.png';
+
+    const door = new Image();
+    door.src = 'images/door.png';
+
+    const fish = new Image();
+    fish.src = 'images/fish.png';
+
+    const boost = new Image();
+    boost.src = 'images/boost.png';
+
+    const greyshark = new Image();
+    greyshark.src = 'images/greyshark.png';
+
+    const uparrow = new Image();
+    uparrow.src = 'images/uparrow.png';
+
+    const downarrow = new Image();
+    downarrow.src = 'images/downarrow.png';
+
+    const rightarrow = new Image();
+    rightarrow.src = 'images/rightarrow.png';
+
+    const leftarrow = new Image();
+    leftarrow.src = 'images/leftarrow.png';
+
+    const blueshark = new Image();
+    blueshark.src = 'images/blueshark.png';
+
+    const net = new Image();
+    net.src = 'images/net.png';
+
+    const bigshark = new Image();
+    bigshark.src = 'images/bigshark.png';
+
+    // Load audio
+    const backgroundAudio = new Audio("audio/gamemusic.mp3");
+    const hitAudio = new Audio("audio/hit.mp3");
+    const victoryAudio = new Audio("audio/victory.mp3");
+    const deathAudio = new Audio("audio/death.mp3");
+    const netAudio = new Audio("audio/net.mp3");
+    const boostAudio = new Audio("audio/boost.mp3");
+
+    // Function to scale and draw the background image
+    function drawBackground() {
+        const scale = Math.max(canvasWidth / backgroundImage.width, canvasHeight / backgroundImage.height);
+        const x = (canvasWidth / 2) - (backgroundImage.width / 2) * scale;
+        const y = (canvasHeight / 2) - (backgroundImage.height / 2) * scale;
+        ctx.drawImage(backgroundImage, x, y, backgroundImage.width * scale, backgroundImage.height * scale);
+    }
+
+    // Wait for the background image to load, then draw it
+    backgroundImage.onload = function() {
+        drawBackground();
+    };
+
+
+    // Score variables
+    let score = 0;
+    let level = 1;
+    let timer=20;
+
+
+    // Shark movement variables
+    let sharkY = canvasHeight / 2;
+    let sharkSpeed = 1;
+    let sharkDirection = 1; // 1 means down, -1 means up
+
+
+     // net movement variables
+    let netY = 0;  // Starting at the top of the canvas
+    const netSpeed = 1.5;  // Speed of the net falling
+    
+
+    // Fish movement variables
+    let fishX = 50; // Starting X position on the left side
+    let fishY = canvasHeight / 2; // Vertically centered
+    const fishSpeed = 3; // Speed of the fish
+
+
+    // Keyboard movement variables
+    let moveUp = false;
+    let moveDown = false;
+    let moveLeft = false;
+    let moveRight = false;
+
+
+
+
+    // Listen for keyboard events to control fish movement
+    window.addEventListener('keydown', function(e) {
+        if (e.key === "ArrowUp") moveUp = true;
+        if (e.key === "ArrowDown") moveDown = true;
+        if (e.key === "ArrowLeft") moveLeft = true;
+        if (e.key === "ArrowRight") moveRight = true;
+    });
+
+    window.addEventListener('keyup', function(e) {
+        if (e.key === "ArrowUp") moveUp = false;
+        if (e.key === "ArrowDown") moveDown = false;
+        if (e.key === "ArrowLeft") moveLeft = false;
+        if (e.key === "ArrowRight") moveRight = false;
+    });
+
+    // Function to update fish position based on keyboard input
+    function updateFishPosition() {
+        const scaledFishWidth = fish.width * 0.5; // Scaled fish width
+        const scaledFishHeight = fish.height * 0.5; // Scaled fish height
+
+        if (moveUp && fishY > 0) fishY -= fishSpeed; // Move up
+        if (moveDown && fishY + scaledFishHeight < canvasHeight) fishY += fishSpeed; // Move down
+        if (moveLeft && fishX > 0) fishX -= fishSpeed; // Move left
+        if (moveRight && fishX + scaledFishWidth < canvasWidth) fishX += fishSpeed; // Move right
+    }
+
+
+
+
+
+    // Function to draw and animate the fish
+    function drawFish() {
+        const fishWidth = fish.width * 0.5; // Scale fish width (adjust if needed)
+        const fishHeight = fish.height * 0.5; // Scale fish height (adjust if needed)
+
+        // Draw the fish at the current X and Y position
+        ctx.drawImage(fish, fishX, fishY, fishWidth, fishHeight);
+    }
+
+
+    // Function to draw and animate the shark with scaling
+    function drawShark() {
+        // Move the shark (up or down)
+        sharkY += sharkSpeed * sharkDirection;
+
+        // Reverse the direction when hitting top or bottom of the canvas
+        if (sharkY + greyshark.height * 0.3 > canvasHeight || sharkY < 0) {
+            sharkDirection *= -1; // Change direction when hitting top or bottom
+        }
+
+        // Set the desired size of the shark (scaled down)
+        const sharkWidth = greyshark.width * 0.3; // 30% of original width
+        const sharkHeight = greyshark.height * 0.3; // 30% of original height
+
+        // Draw the shark on the right side of the screen with scaling
+        ctx.drawImage(greyshark, canvasWidth - sharkWidth - 150, sharkY, sharkWidth, sharkHeight);
+    }
+
+    // Variable for bigShark Y position
+    let bigSharkY = canvasHeight / 2;
+
+    // Function to draw the bigShark image
+    function drawBigShark() {
+        const bigSharkWidth = bigshark.width * 0.2; // Scale bigShark width (adjust if needed)
+        const bigSharkHeight = bigshark.height * 0.3; // Scale bigShark height (adjust if needed)
+        
+        const bigSharkX = canvasWidth / 2; // middle 
+        const bigSharkYPosition = bigSharkY; // Use the updated bigSharkY value
+
+        // Draw the bigShark image on the canvas
+        ctx.drawImage(bigshark, bigSharkX, bigSharkYPosition, bigSharkWidth, bigSharkHeight);
+    }
+
+
+
+
+
+    // Function to draw the door image
+    function drawDoor() {
+        // Calculate the X position for the door to be horizontally centered
+        const doorWidth = door.width * 0.4; // Scale door width (adjust if needed)
+        const doorHeight = door.height * 0.5; // Scale door height (adjust if needed)
+        
+        const doorX = canvasWidth - doorWidth - 10; // 10px from the right edge
+        const doorY = (canvasHeight - doorHeight) / 2; // Vertically centered
+
+        // Draw the door on the canvas
+        ctx.drawImage(door, doorX, doorY, doorWidth, doorHeight);
+    }
+
+    // Function to draw and animate the net
+    function drawNet() {
+        // Move the net vertically down
+        netY += netSpeed;
+
+        // Reset the net position to the top when it reaches the bottom
+        if (netY + net.height * 0.2 > canvasHeight) {
+            netY = 0; // Reset to top of the canvas
+        }
+
+        // Set the desired size of the net (scaled down)
+        const netWidth = net.width;  // Scale net width (adjust if needed)
+        const netHeight = net.height;  // Scale net height (adjust if needed)
+
+        // Draw the net on the canvas
+        ctx.drawImage(net, canvasWidth/2-400, netY, netWidth, netHeight);
+    }
+
+
+
+
+    // Function to draw the score box and display score and level
+    function drawScoreBox() {
+        // Draw the score border image (box)
+        const borderWidth = scoreBorder.width * 0.6;  // Scale border width
+        const borderHeight = scoreBorder.height * 0.6; // Scale border height
+
+        const borderX = 10;  // Position at top left
+        const borderY = 10;  // Position at top left
+
+        // Draw the border image (score box) on the canvas
+        ctx.drawImage(scoreBorder, borderX, borderY, borderWidth, borderHeight);
+
+        // Set font for the score and level text
+        ctx.font = '16px Arial';
+        ctx.fillStyle = 'white'; // Set text color to white
+
+
+        // Display the score inside the score box
+        ctx.fillText(`Score: ${score}`, borderX + 50, borderY + 38); // Offset for padding
+
+        // Display the level inside the score box
+        ctx.fillText(`Level: ${level}`, borderX + 50, borderY + 55); // Offset for padding
+
+        // Display the level inside the score box
+        ctx.fillText(`Timer: ${timer}`, borderX + 50, borderY + 75); // Offset for padding
+    }
+
+
+
+
+    // Update the bigSharkY position every 1 second
+    setInterval(function() {
+        // Randomly change the Y position of bigShark every second
+        bigSharkY = Math.random() * (canvasHeight - 100); // random position within canvas height
+    }, 1000);
+
+    // Event listener to adjust canvas size on window resize
+    window.addEventListener('resize', function() {
+        setCanvasSize();
+        drawBackground();
+    });
+
+    // Game loop to keep updating the canvas
+    function gameLoop() {
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight); // Clear the canvas
+        drawBackground(); // Redraw the background
+        drawShark(); // Draw and animate shark
+        drawDoor();
+        drawBigShark(); // Draw the big shark at updated Y position
+        drawNet(); // Draw and animate the net
+        drawFish(); // Draw the fish
+        updateFishPosition();
+        drawScoreBox();
+        requestAnimationFrame(gameLoop); // Keep the loop running
+    }
+
+    // Initial canvas setup and preload resources
+    setCanvasSize();
+    gameLoop(); // Start the game loop
+
+    // Play background music
+    backgroundAudio.loop = true;
+    backgroundAudio.play();
+
+</script>
+
+</body>
+</html>
