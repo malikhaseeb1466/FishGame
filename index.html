@@ -386,6 +386,13 @@
     }
 
 
+    // Function to play the audio
+    function playBackgroundMusic() {
+        backgroundAudio.play();
+        backgroundAudio.loop = true; // Loop the music
+    }
+
+
 
 
 
@@ -559,13 +566,17 @@
         drawBackground();
     });
 
-    document.addEventListener("keydown", () => {
-        backgroundAudio.play();
-        backgroundAudio.loop=true;
-    });
+    
+    // Event listener for keydown (keyboard) event
+    document.addEventListener("keydown", playBackgroundMusic);
 
+    // Event listener for touchstart (touch) event
+    document.addEventListener("touchstart", playBackgroundMusic);
 
+    // Event listener for click (desktop) event
+    document.addEventListener("click", playBackgroundMusic);
 
+   
 
     // Function to start the timer
     function startTimer() {
@@ -583,6 +594,41 @@
         }, 1000); // 1000 milliseconds = 1 second
     }
 
+
+
+
+    // Attach touch and click event listeners
+    window.addEventListener('touchstart', handleTouch);
+    window.addEventListener('click', handleTouch);
+
+    // Function to handle touch input and update fish position
+    function handleTouch(e) {
+        var rect = canvas.getBoundingClientRect();
+        var tx = e.changedTouches ? e.changedTouches[0].clientX : e.clientX; // Touch or mouse event
+        var ty = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+
+        // Determine the direction based on the touch position
+        if (tx > rect.left + rect.width / 2) {  // Right side
+            if (fishX + scaledFishWidth < canvasWidth) { // Ensure fish stays within canvas
+                fishX += 10;  // Move fish to the right
+            }
+        } else {  // Left side
+            if (fishX > 0) { // Ensure fish stays within canvas
+                fishX -= 10;  // Move fish to the left
+            }
+        }
+
+        if (ty > rect.top + rect.height / 2) {  // Bottom side
+            if (fishY + scaledFishHeight < canvasHeight) { // Ensure fish stays within canvas
+                fishY += 10;  // Move fish down
+            }
+        } else {  // Top side
+            if (fishY > 0) { // Ensure fish stays within canvas
+                fishY -= 10;  // Move fish up
+            }
+        }
+
+    }
 
 
 
@@ -614,39 +660,8 @@
     }
 
 
-    // Set canvas dimensions (You can adjust these values according to your canvas size)
-   // Function to handle touch input and update fish position
-    function handleTouch(e) {
-        var rect = canvas.getBoundingClientRect();
-        var tx = e.changedTouches ? e.changedTouches[0].clientX : e.clientX; // Touch or mouse event
-        var ty = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
 
-        // Determine the direction based on the touch position
-        if (tx > rect.left + rect.width / 2) {  // Right side
-            if (fishX + scaledFishWidth < canvasWidth) { // Ensure fish stays within canvas
-                fishX += 10;  // Move fish to the right
-            }
-        } else {  // Left side
-            if (fishX > 0) { // Ensure fish stays within canvas
-                fishX -= 10;  // Move fish to the left
-            }
-        }
-
-        if (ty > rect.top + rect.height / 2) {  // Bottom side
-            if (fishY + scaledFishHeight < canvasHeight) { // Ensure fish stays within canvas
-                fishY += 10;  // Move fish down
-            }
-        } else {  // Top side
-            if (fishY > 0) { // Ensure fish stays within canvas
-                fishY -= 10;  // Move fish up
-            }
-        }
-
-    }
-
-    // Attach touch and click event listeners
-    window.addEventListener('touchstart', handleTouch);
-    window.addEventListener('click', handleTouch);
+   
 
 
 
