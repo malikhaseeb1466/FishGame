@@ -614,25 +614,17 @@
     }
 
 
-    // Add touch event listeners for continuous touch movement
-    window.addEventListener('touchstart', touchMoveFish);
-    window.addEventListener('touchmove', touchMoveFish);
+    // Attach touch event to canvas
+        canvas.addEventListener("touchstart", handleTouch, false);
 
-    function touchMoveFish(touchEvent) {
-        touchEvent.preventDefault(); // Prevents default scrolling behavior
-
-        // Get the canvas offset
-        var rect = canvas.getBoundingClientRect();
-
-        // Calculate touch coordinates relative to the canvas
-        let touchX = touchEvent.touches[0].clientX - rect.left;
-        let touchY = touchEvent.touches[0].clientY - rect.top;
-
-        // Update the fish's position to follow the touch coordinates
-        fishX = touchX;
-        fishY = touchY;
-    }
-
+        function handleTouch(e)
+        {
+            var rect = canvas.getBoundingClientRect();
+            var tx = e.changedTouches[0].clientX - rect.left;
+            var ty = e.changedTouches[0].clientY - rect.top;
+            fishX = tx;
+            fishY = ty;
+        }
 
 
     // Initial canvas setup and preload resources
